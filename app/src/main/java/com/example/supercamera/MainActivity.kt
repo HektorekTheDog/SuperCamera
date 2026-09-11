@@ -20,7 +20,6 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.MediaStoreOutputOptions
-import androidx.camera.video.PendingRecording
 import androidx.camera.video.Quality
 import androidx.camera.video.QualitySelector
 import androidx.camera.video.Recorder
@@ -63,7 +62,6 @@ class MainActivity : AppCompatActivity() {
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-        // Obsługa suwaka zoomu
         zoomSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser && camera != null) {
@@ -77,7 +75,6 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        // Główny przycisk akcji (ZDJĘCIE / NAGRYWAJ)
         captureButton.setOnClickListener {
             if (isVideoMode) {
                 if (isRecording) {
@@ -85,11 +82,10 @@ class MainActivity : AppCompatActivity() {
                     recording?.stop()
                     recording = null
                     isRecording = false
-                    captureButton.text = "ZDJĘCIE"
+                    captureButton.text = "NAGRYWAJ"
                     captureButton.setBackgroundColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
-                    Toast.Video?.let { } // holder
                 } else {
-                    // Rozpocznij nagrywanie wideo
+                    // Rozpocznij nagrywanie
                     startRecording()
                 }
             } else {
@@ -98,7 +94,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Przyciski trybów
         findViewById<Button>(R.id.btnFoto).setOnClickListener { 
             isVideoMode = false
             statusTextView.text = "Tryb: Standard | AI: OFF"
@@ -181,18 +176,18 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
-                    Toast.makeText(baseContext, "Błąd zapisu zdjęcia: ${exc.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseContext, "Błąd zapisu: ${exc.message}", Toast.LENGTH_SHORT).show()
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    Toast.makeText(baseContext, "Zapisano zdjęcie w Galerii!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseContext, "Zapisano zdjęcie!", Toast.LENGTH_SHORT).show()
                 }
             }
         )
     }
 
     private fun startRecording() {
-        val videoCapture = videoCapture ?: return
+        val videoCapture = this.videoCapture ?: return
 
         captureButton.text = "STOP"
         captureButton.setBackgroundColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
@@ -208,32 +203,30 @@ class MainActivity : AppCompatActivity() {
 
         val mediaStoreOutputOptions = MediaStoreOutputOptions.Builder(
             contentResolver, MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-        ).contentValues(contentValues).build()
+        ).setContentValues(contentValues).build()
 
-        recording = videoCapture.output
-            .prepareRecording(this, mediaStoreOutputOptions)
-            .apply {
-                if (PermissionChecker.checkSelfPermission(baseContext, Manifest.permission.RECORD_AUDIO) == PermissionChecker.PERMISSION_GRANTED) {
-                    withAudioEnabled()
+        var pendingRecording = videoCapture.output.prepareRecording(this, mediaStoreOutputOptions)
+
+        if (PermissionChecker.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PermissionChecker.PERMISSION_GRANTED) {
+            pendingRecording = pendingRecording.withAudioEnabled()
+        }
+
+        recording = pendingRecording.start(ContextCompat.getMainExecutor(this)) { recordEvent: VideoRecordEvent ->
+            when (recordEvent) {
+                is VideoRecordEvent.Start -> {
+                    isRecording = true
+                    Toast.makeText(baseContext, "Rozpoczęto nagrywanie...", Toast.LENGTH_SHORT).show()
                 }
-            }
-            .start(ContextCompat.getMainExecutor(this)) { recordEvent ->
-                when (recordEvent) {
-                    is VideoRecordEvent.Start -> {
-                        isRecording = true
-                        Toast.makeText(baseContext, "Rozpoczęto nagrywanie wideo", Toast.LENGTH_SHORT).show()
-                    }
-                    is VideoRecordEvent.Finalize -> {
-                        if (!recordEvent.hasError()) {
-                            Toast.makeText(baseContext, "Zapisano wideo w Galerii!", Toast.LENGTH_SHORT).show()
-                        } else {
-                            recording?.close()
-                            recording = null
-                            Toast.makeText(baseContext, "Błąd nagrywania: ${recordEvent.error}", Toast.LENGTH_SHORT).show()
-                        }
+                is VideoRecordEvent.Finalize -> {
+                    isRecording = false
+                    if (!recordEvent.hasError()) {
+                        Toast.makeText(baseContext, "Zapisano wideo!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(baseContext, "Błąd: ${recordEvent.error}", Toast.LENGTH_LONG).show()
                     }
                 }
             }
+        }
     }
 
     private fun allPermissionsGranted() = ContextCompat.checkSelfPermission(

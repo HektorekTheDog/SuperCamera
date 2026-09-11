@@ -1,33 +1,36 @@
-name: Build Android APK
+name: Build Android App
 
-on: 
+on:
   push:
     branches: [ "main" ]
-  workflow_dispatch: # Pozwala ręcznie uruchomić budowanie!
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v4
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
-        distribution: 'temurin'
         java-version: '17'
+        distribution: 'temurin'
 
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
-      with:
-        gradle-version: '8.2' # Wymuszamy nowoczesną wersję dla Androida!
+      uses: gradle/actions/setup-gradle@v4
 
     - name: Build Debug APK
       run: gradle :app:assembleDebug
 
-    - name: Upload APK Artifact
+    - name: Rename and Prepare APK
+      run: |
+        mkdir -p build/outputs
+        cp app/build/outputs/apk/debug/app-debug.apk build/outputs/SuperCamera-Oppo.apk
+
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: super-camera-apk
-        path: app/build/outputs/apk/debug/app-debug.apk
+        name: SuperCamera-App
+        path: build/outputs/SuperCamera-Oppo.apk

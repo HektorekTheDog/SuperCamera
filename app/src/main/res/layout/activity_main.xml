@@ -1,139 +1,92 @@
-package com.example.supercamera
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Bundle
-import android.widget.Button
-import android.widget.SeekBar
-import android.widget.TextView
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.camera.core.Camera
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.Locale
+    <androidx.camera.view.PreviewView
+        android:id="@+id/viewFinder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
-class MainActivity : AppCompatActivity() {
+    <TextView
+        android:id="@+id/statusTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Tryb: Standard | AI: OFF"
+        android:textColor="@android:color/holo_blue_light"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    private lateinit var viewFinder: PreviewView
-    private lateinit var statusTextView: TextView
-    private lateinit var zoomTextView: TextView
-    private lateinit var zoomSeekBar: SeekBar
-    private lateinit var captureButton: Button
+    <TextView
+        android:id="@+id/zoomTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="1.0x"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/zoomSeekBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-    private var imageCapture: ImageCapture? = null
-    private var camera: Camera? = null
-    private lateinit var cameraExecutor: ExecutorService
+    <SeekBar
+        android:id="@+id/zoomSeekBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="16dp"
+        android:max="1200"
+        app:layout_constraintBottom_toTopOf="@id/modeScroll"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+    <HorizontalScrollView
+        android:id="@+id/modeScroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toTopOf="@id/captureButton">
 
-        // Powiązanie elementów z Twojego XML
-        viewFinder = findViewById(R.id.viewFinder)
-        statusTextView = findViewById(R.id.statusTextView)
-        zoomTextView = findViewById(R.id.zoomTextView)
-        zoomSeekBar = findViewById(R.id.zoomSeekBar)
-        captureButton = findViewById(R.id.captureButton)
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp">
 
-        cameraExecutor = Executors.newSingleThreadExecutor()
+            <Button android:id="@+id/btnFoto" android:text="Foto" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnVideo" android:text="Wideo" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnBetter" android:text="Better (10x)" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnUltra" android:text="Ultra (15x)" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnNight" android:text="Tryb Nocny" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnUltraNight" android:text="Ultra Night AI" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnPortrait" android:text="Portret" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnExtraHd" android:text="Extra HD" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnTimelapse" android:text="Poklatkowy" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnSlowMo" android:text="Zwolnione T." android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnPanorama" android:text="Panorama"/>
+        </LinearLayout>
+    </HorizontalScrollView>
 
-        // Obsługa suwaka zoomu
-        zoomSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser && camera != null) {
-                    // Przeliczamy wartość suwaka (0-1200) na zoom liniowy (0.0 - 1.0)
-                    val linearZoom = progress / 1200f
-                    camera?.cameraControl?.setLinearZoom(linearZoom)
-                    
-                    val zoomVal = 1.0f + (linearZoom * 9.0f) // Symulacja powiększenia do 10x
-                    zoomTextView.text = String.format(Locale.US, "%.1fx", zoomVal)
-                }
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
+    <Button
+        android:id="@+id/captureButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:backgroundTint="@android:color/holo_red_dark"
+        android:text="ZDJĘCIE"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-        // Obsługa przycisku zdjęcia
-        captureButton.setOnClickListener {
-            Toast.makeText(this, "Zapisywanie zdjęcia...", Toast.LENGTH_SHORT).show()
-        }
-
-        // Obsługa przycisków trybów u góry
-        findViewById<Button>(R.id.btnFoto).setOnClickListener { statusTextView.text = "Tryb: Standard | AI: OFF" }
-        findViewById<Button>(R.id.btnVideo).setOnClickListener { statusTextView.text = "Tryb: Wideo | AI: OFF" }
-        findViewById<Button>(R.id.btnBetter).setOnClickListener { 
-            statusTextView.text = "Tryb: Better (10x) | AI: ON"
-            zoomSeekBar.progress = 1200 // Ustawia max zoom
-        }
-        findViewById<Button>(R.id.btnUltra).setOnClickListener { statusTextView.text = "Tryb: Ultra (15x) | AI: ON" }
-        findViewById<Button>(R.id.btnNight).setOnClickListener { statusTextView.text = "Tryb: Nocny | AI: ON" }
-        findViewById<Button>(R.id.btnUltraNight).setOnClickListener { statusTextView.text = "Tryb: Ultra Night AI | MAX" }
-        findViewById<Button>(R.id.btnPortrait).setOnClickListener { statusTextView.text = "Tryb: Portret | Rozmycie: ON" }
-        findViewById<Button>(R.id.btnExtraHd).setOnClickListener { statusTextView.text = "Tryb: Extra HD | 48MP" }
-        findViewById<Button>(R.id.btnTimelapse).setOnClickListener { statusTextView.text = "Tryb: Poklatkowy" }
-        findViewById<Button>(R.id.btnSlowMo).setOnClickListener { statusTextView.text = "Tryb: Zwolnione T." }
-        findViewById<Button>(R.id.btnPanorama).setOnClickListener { statusTextView.text = "Tryb: Panorama" }
-
-        if (allPermissionsGranted()) {
-            startCamera()
-        } else {
-            ActivityCompat.requestPermissions(
-                this, arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO), 10
-            )
-        }
-    }
-
-    private fun startCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-
-        cameraProviderFuture.addListener({
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-
-            val preview = Preview.Builder().build().also {
-                it.setSurfaceProvider(viewFinder.surfaceProvider)
-            }
-
-            imageCapture = ImageCapture.Builder().build()
-
-            try {
-                cameraProvider.unbindAll()
-                camera = cameraProvider.bindToLifecycle(
-                    this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture
-                )
-            } catch (exc: Exception) {
-                Toast.makeText(this, "Błąd startu kamery", Toast.LENGTH_SHORT).show()
-            }
-        }, ContextCompat.getMainExecutor(this))
-    }
-
-    private fun allPermissionsGranted() = ContextCompat.checkSelfPermission(
-        baseContext, Manifest.permission.CAMERA
-    ) == PackageManager.PERMISSION_GRANTED
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>, grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 10) {
-            if (allPermissionsGranted()) {
-                startCamera()
-            } else {
-                Toast.makeText(this, "Wymagane uprawnienia do kamery!", Toast.LENGTH_SHORT).show()
-                finish()
-            }
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        cameraExecutor.shutdown()
-    }
-}
+</androidx.constraintlayout.widget.ConstraintLayout>

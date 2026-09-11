@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/viewFinder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <TextView
+        android:id="@+id/statusTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Tryb: Standard | AI: OFF"
+        android:textColor="@android:color/holo_blue_light"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/zoomTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="1.0x"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/zoomSeekBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <SeekBar
+        android:id="@+id/zoomSeekBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="16dp"
+        android:max="1200"
+        app:layout_constraintBottom_toTopOf="@id/modeScroll"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <HorizontalScrollView
+        android:id="@+id/modeScroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toTopOf="@id/captureButton">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp">
+
+            <Button android:id="@+id/btnFoto" android:text="Foto" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnVideo" android:text="Wideo" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnBetter" android:text="Better (10x)" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnUltra" android:text="Ultra (15x)" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnNight" android:text="Tryb Nocny" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnUltraNight" android:text="Ultra Night AI" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnPortrait" android:text="Portret" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnExtraHd" android:text="Extra HD" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnTimelapse" android:text="Poklatkowy" android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnSlowMo" android:text="Zwolnione T." android:layout_marginEnd="4dp"/>
+            <Button android:id="@+id/btnPanorama" android:text="Panorama"/>
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <Button
+        android:id="@+id/captureButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:backgroundTint="@android:color/holo_red_dark"
+        android:text="ZDJĘCIE"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
